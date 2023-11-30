@@ -25,12 +25,10 @@ normalize_address <- function(address,
   jsonlite::write_json(data_unique, file)
   on.exit(fs::file_delete(file))
 
-  processx::run(
-    command = "node",
-    args = c("normalize_address.js"),
-    wd = system.file("node",
-                     package = "jpaddr")
-  )
+  processx::run(command = "node",
+                args = "normalize_address.js",
+                wd = system.file("node",
+                                 package = "jpaddr"))
 
   out <- dplyr::as_tibble(jsonlite::fromJSON(file))
   data |>

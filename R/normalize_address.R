@@ -3,6 +3,7 @@
 #' @param address Address to normalize.
 #' @param level Level of address normalization. One of `"town"`, `"city"`, or
 #' `"pref"` (by default, `"town"`).
+#' @param progress Whether to show progress bar (by default, `FALSE`).
 #'
 #' @return A tibble with normalized address.
 #'
@@ -10,39 +11,57 @@
 #'
 #' @export
 normalize_address <- function(address,
-                              level = "town") {
+                              level = "town",
+                              progress = FALSE) {
   level <- rlang::arg_match(level, c("town", "city", "pref"),
                             multiple = TRUE) |>
     dplyr::case_match("town" ~ 3,
                       "city" ~ 2,
                       "pref" ~ 1)
 
-  data <- vctrs::data_frame(address = vctrs::vec_cast(address, character()),
-                            level = vctrs::vec_cast(level, integer()))
-  data_unique <- vctrs::vec_unique(data)
+  data <- tibble::tibble(address = vctrs::vec_cast(address, character()),
+                         level = vctrs::vec_cast(level, integer()))
 
   file <- fs::path(system.file("node", package = "jpaddr"), "normalize_address.json")
-  jsonlite::write_json(data_unique, file)
-  on.exit(fs::file_delete(file))
+  on.exit(if(fs::file_exists(file)) fs::file_delete(file))
 
-  processx::run(command = "node",
-                args = "normalize_address.js",
-                wd = system.file("node",
-                                 package = "jpaddr"))
+  data_unique <- vctrs::vec_unique(data) |>
+    dplyr::mutate(data = purrr::map2(
+      address, level,
+      purrr::slowly(purrr::possibly(\(address, level) {
+        processx::run(command = "node",
+                      args = c("normalize_address.js", address, level),
+                      wd = system.file("node",
+                                       package = "jpaddr"))
 
-  out <- dplyr::as_tibble(jsonlite::fromJSON(file))
+        out <- jsonlite::read_json(file)
+        out$lat <- out$lat %||% NA_real_
+        out$lng <- out$lng %||% NA_real_
+        out$error <- FALSE
+        out
+      },
+      otherwise = tibble::tibble(pref = NA_character_,
+                                 city = NA_character_,
+                                 town = NA_character_,
+                                 addr = NA_character_,
+                                 level = NA_integer_,
+                                 lat = NA_real_,
+                                 lng = NA_real_,
+                                 error = TRUE)),
+      rate = purrr::rate_delay(1e-1)),
+      .progress = progress
+    ) |>
+      dplyr::bind_rows())
+
   data |>
-    dplyr::left_join(dplyr::tibble(data_unique,
-                                   out = out),
+    dplyr::left_join(data_unique,
                      by = c("address", "level")) |>
-    dplyr::pull("out") |>
+    dplyr::pull("data") |>
     dplyr::mutate(dplyr::across(c("pref", "city", "town", "addr"),
                                 \(x) dplyr::na_if(x, "")),
                   level = dplyr::case_match(.data$level,
                                             1 ~ "pref",
                                             2 ~ "city",
                                             3 ~ "town") |>
-                    factor(c("pref", "city", "town")),
-                  dplyr::across(c("lat", "lng"),
-                                as.double))
+                    factor(c("pref", "city", "town")))
 }

@@ -2,4 +2,5 @@
 
 export(jpaddr_npm_install)
 export(normalize_address)
+importFrom(rlang,"%||%")
 importFrom(rlang,.data)

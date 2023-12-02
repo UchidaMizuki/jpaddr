@@ -3,6 +3,8 @@
 #' @param address Address to normalize.
 #' @param level Level of address normalization. One of `"town"`, `"city"`, or
 #' `"pref"` (by default, `"town"`).
+#' @param pause Pause time between requests in seconds (by default, `0.1`).
+#' @param timeout Timeout for each request in seconds (by default, `10`).
 #' @param progress Whether to show progress bar (by default, `FALSE`).
 #'
 #' @return A tibble with normalized address.
@@ -12,7 +14,14 @@
 #' @export
 normalize_address <- function(address,
                               level = "town",
+                              pause = 0.1,
+                              timeout = 10,
                               progress = FALSE) {
+  if (pause < 0.1) {
+    rlang::warn("`pause` is too short. Set to 0.1 seconds.")
+    pause <- 0.1
+  }
+
   level <- rlang::arg_match(level, c("town", "city", "pref"),
                             multiple = TRUE) |>
     dplyr::case_match("town" ~ 3,
@@ -30,7 +39,7 @@ normalize_address <- function(address,
       address, level,
       purrr::slowly(purrr::possibly(\(address, level) {
         processx::run(command = "node",
-                      args = c("normalize_address.js", address, level),
+                      args = c("normalize_address.js", address, level, timeout),
                       wd = system.file("node",
                                        package = "jpaddr"))
 
@@ -48,7 +57,7 @@ normalize_address <- function(address,
                                  lat = NA_real_,
                                  lng = NA_real_,
                                  error = TRUE)),
-      rate = purrr::rate_delay(1e-1)),
+      rate = purrr::rate_delay(pause)),
       .progress = progress
     ) |>
       dplyr::bind_rows())

@@ -17,7 +17,9 @@ Imports:
     fs,
     jsonlite,
     processx,
+    purrr,
     rlang,
+    tibble,
     vctrs
 Roxygen: list(markdown = TRUE)
 Suggests: 

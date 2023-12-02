@@ -18,7 +18,6 @@ Imports:
     git2r,
     jsonlite,
     processx,
-    purrr,
     rlang,
     tibble,
     vctrs

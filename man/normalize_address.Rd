@@ -7,25 +7,13 @@
 \href{https://github.com/geolonia/normalize-japanese-addresses}{@geolonia/normalize-japanese-addresses}
 }
 \usage{
-normalize_address(
-  address,
-  level = "town",
-  pause = 0.1,
-  timeout = 10,
-  progress = FALSE
-)
+normalize_address(address, level = "town")
 }
 \arguments{
 \item{address}{Address to normalize.}
 
 \item{level}{Level of address normalization. One of \code{"town"}, \code{"city"}, or
 \code{"pref"} (by default, \code{"town"}).}
-
-\item{pause}{Pause time between requests in seconds (by default, \code{0.1}).}
-
-\item{timeout}{Timeout for each request in seconds (by default, \code{10}).}
-
-\item{progress}{Whether to show progress bar (by default, \code{FALSE}).}
 }
 \value{
 A tibble with normalized address.

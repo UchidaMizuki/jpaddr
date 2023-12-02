@@ -1,4 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^inst/node/node_modules$
+^inst/normalize-japanese-addresses/node_modules$
+^inst/normalize-japanese-addresses/japanese-addresses$
 ^LICENSE\.md$
+^README\.Rmd$

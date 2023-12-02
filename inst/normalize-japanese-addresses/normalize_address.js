@@ -1,5 +1,7 @@
-const { normalize } = require('@geolonia/normalize-japanese-addresses');
+const { config, normalize } = require('@geolonia/normalize-japanese-addresses');
 const fs = require('fs');
+
+config.japaneseAddressesApi = 'file:///japanese-addresses/api/ja';
 
 const timeout = process.argv[4] * 1000;
 

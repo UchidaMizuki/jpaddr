@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@geolonia/normalize-japanese-addresses": "^2.10.0"
+  }
+}

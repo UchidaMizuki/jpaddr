@@ -31,7 +31,7 @@ normalize_address <- function(address,
   data <- tibble::tibble(address = vctrs::vec_cast(address, character()),
                          level = vctrs::vec_cast(level, integer()))
 
-  file <- fs::path(system.file("node", package = "jpaddr"), "normalize_address.json")
+  file <- fs::path(system.file("normalize-japanese-addresses", package = "jpaddr"), "normalize_address.json")
   on.exit(if(fs::file_exists(file)) fs::file_delete(file))
 
   data_unique <- vctrs::vec_unique(data) |>
@@ -40,7 +40,7 @@ normalize_address <- function(address,
       purrr::slowly(purrr::possibly(\(address, level) {
         processx::run(command = "node",
                       args = c("normalize_address.js", address, level, timeout),
-                      wd = system.file("node",
+                      wd = system.file("normalize-japanese-addresses",
                                        package = "jpaddr"))
 
         out <- jsonlite::read_json(file)

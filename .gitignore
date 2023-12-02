@@ -2,4 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
-inst/node/node_modules
+inst/normalize-japanese-addresses/node_modules
+inst/normalize-japanese-addresses/japanese-addresses
